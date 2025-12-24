@@ -137,23 +137,36 @@ if st.button("🔍 Analyze & Explain", type="primary", use_container_width=True)
             st.success(f"✅ **LOW RISK** ({probability*100:.1f}%)")
 
     # --- SHAP AÇIKLAMASI ---
+   # --- SHAP AÇIKLAMASI (DÜZELTİLMİŞ) ---
     st.subheader("2. Why this result? (Explainability)")
     with st.spinner("Calculating feature impacts..."):
         
-        # SHAP Explainer Kurulumu (Lojistik Regresyon için LinearExplainer)
-        # maskers.Independent kullanarak arka plan verisini özetliyoruz
+        # 1. Özellik İsimlerini Alalım (Düzeltme Burada!)
+        # processed_data, sütun isimlerini (age, sex, cp_0 vb.) hala koruyor.
+        feature_names = processed_data.columns.tolist()
+        
+        # 2. SHAP Explainer Kurulumu
         explainer = shap.LinearExplainer(model, X_train_scaled)
+        
+        # 3. Değerleri Hesapla
         shap_values = explainer(scaled_data)
         
-        # Grafik Çizimi (Waterfall)
-        fig, ax = plt.subplots(figsize=(8, 6))
-        # max_display=10: En önemli 10 özelliği göster
-        shap.plots.waterfall(shap_values[0], max_display=10, show=False)
+        # 4. İsimleri SHAP Objesine Elle Ekliyoruz (Feature 16 sorununu çözer)
+        shap_values.feature_names = feature_names
+        
+        # 5. Grafik Çizimi
+        fig, ax = plt.subplots(figsize=(10, 8)) # Grafiği biraz büyüttük
+        
+        # max_display=12: En etkili 12 özelliği göster
+        shap.plots.waterfall(shap_values[0], max_display=12, show=False)
+        
+        # Yazıları daha okunur yapalım
+        plt.title("Factors Driving the Risk Score", fontsize=16)
         st.pyplot(fig)
         
     st.info("""
     **How to read this graph:**
-    * **Red bars (→):** Features that push the risk **HIGHER** (towards Heart Disease).
-    * **Blue bars (←):** Features that push the risk **LOWER** (towards Healthy).
-    * The size of the bar represents the strength of the impact.
+    * **Features (Y-Axis):** Names like 'oldpeak' (ST Depression) or 'cp_asymptomatic' show which factor is active.
+    * **Red bars (→):** Factors increasing the risk.
+    * **Blue bars (←):** Factors decreasing the risk.
     """)
