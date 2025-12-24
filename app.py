@@ -137,36 +137,32 @@ if st.button("🔍 Analyze & Explain", type="primary", use_container_width=True)
             st.success(f"✅ **LOW RISK** ({probability*100:.1f}%)")
 
     # --- SHAP AÇIKLAMASI ---
-   # --- SHAP AÇIKLAMASI (DÜZELTİLMİŞ) ---
+  # --- SHAP AÇIKLAMASI (TÜM ÖZELLİKLER) ---
     st.subheader("2. Why this result? (Explainability)")
     with st.spinner("Calculating feature impacts..."):
         
-        # 1. Özellik İsimlerini Alalım (Düzeltme Burada!)
-        # processed_data, sütun isimlerini (age, sex, cp_0 vb.) hala koruyor.
         feature_names = processed_data.columns.tolist()
+        toplam_ozellik_sayisi = len(feature_names) # Özellik sayısını otomatik alalım
         
-        # 2. SHAP Explainer Kurulumu
         explainer = shap.LinearExplainer(model, X_train_scaled)
-        
-        # 3. Değerleri Hesapla
         shap_values = explainer(scaled_data)
-        
-        # 4. İsimleri SHAP Objesine Elle Ekliyoruz (Feature 16 sorununu çözer)
         shap_values.feature_names = feature_names
         
-        # 5. Grafik Çizimi
-        fig, ax = plt.subplots(figsize=(10, 8)) # Grafiği biraz büyüttük
+        # Grafik boyutunu özellik sayısına göre dinamik ayarlayalım
+        # Her özellik için dikeyde biraz yer açıyoruz (Minimum 8 birim, özellik başına 0.5 birim)
+        dynamic_height = max(8, toplam_ozellik_sayisi * 0.5)
+        fig, ax = plt.subplots(figsize=(10, dynamic_height))
         
-        # max_display=12: En etkili 12 özelliği göster
-        shap.plots.waterfall(shap_values[0], max_display=12, show=False)
+        # max_display parametresini toplam sayıya eşitliyoruz
+        shap.plots.waterfall(shap_values[0], max_display=toplam_ozellik_sayisi, show=False)
         
-        # Yazıları daha okunur yapalım
-        plt.title("Factors Driving the Risk Score", fontsize=16)
+        plt.title(f"Impact of All {toplam_ozellik_sayisi} Features", fontsize=16)
         st.pyplot(fig)
         
     st.info("""
-    **How to read this graph:**
-    * **Features (Y-Axis):** Names like 'oldpeak' (ST Depression) or 'cp_asymptomatic' show which factor is active.
-    * **Red bars (→):** Factors increasing the risk.
-    * **Blue bars (←):** Factors decreasing the risk.
+    **Graph Guide:**
+    This waterfall plot shows **every single factor** considered by the model.
+    * **Red bars (→):** Push the risk score UP.
+    * **Blue bars (←):** Push the risk score DOWN.
     """)
+
