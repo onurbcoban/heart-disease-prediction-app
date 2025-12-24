@@ -29,7 +29,7 @@ high_risk_profile = {
 
 medium_risk_profile = {
     'age': 52, 'sex': 1, 'trestbps': 130, 'chol': 245, 'thalach': 155, 'oldpeak': 0.8,
-    'cp': 1, 'fbs': 0, 'restecg': 1, 'exang': 0, 'slope': 1, 'ca': 0, 'thal': 1
+    'cp': 1, 'fbs': 0, 'restecg': 1, 'exang': 1, 'slope': 1, 'ca': 1, 'thal': 1
 }
 
 low_risk_profile = {
@@ -159,3 +159,4 @@ if st.button("🔍 Analyze & Explain", type="primary", use_container_width=True)
         st.pyplot(fig)
         
     st.info("ℹ️ **Note:** 'Age' impact is mathematically constrained to never reduce risk, ensuring logical consistency.")
+
